@@ -52,7 +52,12 @@ def create_accounts():
     message = account.serialize()
     # Uncomment once get_accounts has been implemented
     # location_url = url_for("get_accounts", account_id=account.id, _external=True)
-    location_url = "/"  # Remove once get_accounts has been implemented
+    #location_url = "/"  # Remove once get_accounts has been implemented
+    location_url = url_for(
+        "read_account",
+        account_id=account.id,
+        _external=False
+    )
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
@@ -63,20 +68,60 @@ def create_accounts():
 
 # ... place you code here to LIST accounts ...
 
+@app.route("/accounts", methods=["GET"])
+def list_accounts():
+
+    accounts = Account.all()
+
+    results = [account.serialize() for account in accounts]
+
+    return jsonify(results), status.HTTP_200_OK
 
 ######################################################################
 # READ AN ACCOUNT
 ######################################################################
 
 # ... place you code here to READ an account ...
+@app.route("/accounts/<int:account_id>", methods=["GET"])
+def read_account(account_id):
+    """
+    Reads an Account
+    """
+    account = Account.find(account_id)
 
+    if not account:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Account with id '{account_id}' was not found."
+        )
+
+    return jsonify(account.serialize()), status.HTTP_200_OK
 
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
 ######################################################################
 
 # ... place you code here to UPDATE an account ...
+@app.route("/accounts/<int:account_id>", methods=["PUT"])
+def update_account(account_id):
+    """
+    Updates an Account
+    """
+    check_content_type("application/json")
 
+    account = Account.find(account_id)
+
+    if not account:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Account with id '{account_id}' was not found."
+        )
+
+    account.deserialize(request.get_json())
+    account.id = account_id
+    account.update()
+
+    return jsonify(account.serialize()), status.HTTP_200_OK
 
 ######################################################################
 # DELETE AN ACCOUNT
@@ -84,6 +129,17 @@ def create_accounts():
 
 # ... place you code here to DELETE an account ...
 
+@app.route("/accounts/<int:account_id>", methods=["DELETE"])
+def delete_account(account_id):
+    """
+    Deletes an Account
+    """
+    account = Account.find(account_id)
+
+    if account:
+        account.delete()
+
+    return "", status.HTTP_204_NO_CONTENT
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
