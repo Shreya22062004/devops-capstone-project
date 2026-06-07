@@ -52,7 +52,13 @@ def create_accounts():
     message = account.serialize()
     # Uncomment once get_accounts has been implemented
     # location_url = url_for("get_accounts", account_id=account.id, _external=True)
-    location_url = "/"  # Remove once get_accounts has been implemented
+    # location_url = "/"  # Remove once get_accounts has been implemented
+    location_url = url_for(
+        "read_account",
+        account_id=account.id,
+        _external=False
+    )
+    
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
@@ -69,7 +75,25 @@ def create_accounts():
 ######################################################################
 
 # ... place you code here to READ an account ...
+######################################################################
+# READ AN ACCOUNT
+######################################################################
 
+@app.route("/accounts/<int:account_id>", methods=["GET"])
+def read_account(account_id):
+    """
+    Reads an Account
+    """
+
+    account = Account.find(account_id)
+
+    if not account:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Account with id '{account_id}' was not found."
+        )
+
+    return jsonify(account.serialize()), status.HTTP_200_OK
 
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
