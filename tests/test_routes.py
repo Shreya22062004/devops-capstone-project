@@ -148,3 +148,14 @@ class TestAccountService(TestCase):
             "default-src 'self'" in
             response.headers["Content-Security-Policy"]
         )
+
+    def test_cors_headers(self):
+        response = self.client.get(
+            "/",
+            environ_overrides=HTTPS_ENVIRON
+        )
+
+        self.assertEqual(
+            response.headers["Access-Control-Allow-Origin"],
+            "*"
+        )
